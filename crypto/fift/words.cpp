@@ -764,6 +764,36 @@ void interpret_string_to_bytes(vm::Stack& stack) {
   stack.push_bytes(stack.pop_string());
 }
 
+std::string hex_to_string(const std::string& input)
+{
+    static const char* const lut = "0123456789ABCDEF";
+    size_t len = input.length();
+    if (len & 1) throw std::invalid_argument("odd length");
+
+    std::string output;
+    output.reserve(len / 2);
+    for (size_t i = 0; i < len; i += 2)
+    {
+        char a = input[i];
+        const char* p = std::lower_bound(lut, lut + 16, a);
+        if (*p != a) throw std::invalid_argument("not a hex digit");
+
+        char b = input[i + 1];
+        const char* q = std::lower_bound(lut, lut + 16, b);
+        if (*q != b) throw std::invalid_argument("not a hex digit");
+
+        output.push_back(((p - lut) << 4) | (q - lut));
+    }
+    return output;
+}
+
+void interpret_hex_string_to_bytes(vm::Stack& stack) {
+  std::string str = stack.pop_string();
+
+  std::string hex_str = hex_to_string(str);
+  stack.push_bytes(hex_str);
+}
+
 void interpret_bytes_hash(vm::Stack& stack) {
   std::string str = stack.pop_bytes();
   unsigned char buffer[32];
@@ -2473,6 +2503,7 @@ void init_words_common(Dictionary& d) {
   d.def_stack_word("B>Li@ ", std::bind(interpret_bytes_fetch_int, _1, 0x11));
   d.def_stack_word("B>Lu@+ ", std::bind(interpret_bytes_fetch_int, _1, 0x12));
   d.def_stack_word("B>Li@+ ", std::bind(interpret_bytes_fetch_int, _1, 0x13));
+  d.def_stack_word("$x>B ", interpret_hex_string_to_bytes);
   d.def_stack_word("$>B ", interpret_string_to_bytes);
   d.def_stack_word("Bhash ", interpret_bytes_hash);
   // cell manipulation (create, write and modify cells)
