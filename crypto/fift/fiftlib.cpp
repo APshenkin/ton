@@ -102,28 +102,6 @@ void run(const char* sourcePath, const char* fift_path, char* const argv[],
       res.push_back(fift_output.output.c_str());
 
       loadFiles(fift_output, res, returnFiles, returnFilesC, 0, callback);
-
-      // if (fileLoadError.empty()) {
-      //        const char* arr[res.size()];
-      //          for (int i = 0; i < res.size(); i++) {
-      //            arr[i] = res[i];
-      //          }
-      //        callback(arr, {0});
-      //      } else {
-      //        callback({0}, fileLoadError.c_str());
-      //      }
     }
   }
-
-  //  auto new_wallet_pk =
-  //  fift_output.source_lookup.read_file("new-wallet.pk").move_as_ok().data;
-  //  auto new_wallet_query =
-  //  fift_output.source_lookup.read_file("new-wallet-query.boc").move_as_ok().data;
-  //  auto new_wallet_addr =
-  //  fift_output.source_lookup.read_file("new-wallet.addr").move_as_ok().data;
-  //
-  //  std::cout << new_wallet_pk;
-  //
-  //  std::string strMytestString("hello world");
-  //  std::cout << strMytestString;
 }
