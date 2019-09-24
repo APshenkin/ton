@@ -43,6 +43,9 @@ td::Result<std::string> load_TonUtil_fif(std::string dir = "") {
 td::Result<std::string> load_Lists_fif(std::string dir = "") {
   return load_source("Lists.fif", dir);
 }
+td::Result<std::string> load_file(std::string path) {
+  return td::read_file_str(path);
+}
 
 class MemoryFileLoader : public fift::FileLoader {
  public:
@@ -161,6 +164,39 @@ td::Result<FiftOutput> mem_run_fift(SourceLookup source_lookup, std::vector<std:
 td::Result<fift::SourceLookup> create_mem_source_lookup(std::string main, std::string fift_dir, bool need_preamble,
                                                         bool need_asm, bool need_ton_util) {
   return create_source_lookup(main, need_preamble, need_asm, need_ton_util, fift_dir);
+}
+
+td::Result<fift::SourceLookup> create_mem_source_lookup(std::string main, std::vector<std::string> files, std::string dir, bool need_preamble, bool need_asm,
+                                                    bool need_ton_util) {
+  auto loader = std::make_unique<MemoryFileLoader>();
+  loader->add_file("/main.fif", std::move(main));
+
+  for (const auto &file : files) {
+     TRY_RESULT(f, load_file(file));
+     loader->add_file(file, std::move(f));
+  }
+
+  if (need_preamble) {
+    TRY_RESULT(f, load_Fift_fif(dir));
+    loader->add_file("/Fift.fif", std::move(f));
+  }
+  if (need_asm) {
+    TRY_RESULT(f, load_Asm_fif(dir));
+    loader->add_file("/Asm.fif", std::move(f));
+  }
+  if (need_ton_util) {
+    {
+      TRY_RESULT(f, load_Lists_fif(dir));
+      loader->add_file("/Lists.fif", std::move(f));
+    }
+    {
+      TRY_RESULT(f, load_TonUtil_fif(dir));
+      loader->add_file("/TonUtil.fif", std::move(f));
+    }
+  }
+  auto res = fift::SourceLookup(std::move(loader));
+  res.add_include_path("/");
+  return std::move(res);
 }
 
 td::Result<td::Ref<vm::Cell>> compile_asm(td::Slice asm_code, std::string fift_dir) {

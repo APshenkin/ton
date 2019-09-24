@@ -74,20 +74,25 @@ void loadFiles(fift::FiftOutput & fift_output,
 }
 
 void run(const char* sourcePath, const char* fift_path, char* const argv[],
-         int argc, char* const returnFiles[], int returnFilesC,
+         int argc, char* const add_files[], int add_files_c, char* const returnFiles[], int returnFilesC,
          void (*callback)(const char**, const char*)) {
   SET_VERBOSITY_LEVEL(verbosity_INFO);
 
   auto loadSource = td::read_file_str(std::string(sourcePath));
   std::vector<std::string> args(argv, argv + argc);
+  std::vector<std::string> files(add_files, add_files + add_files_c);
 
   std::vector<const char*> res;
 
   if (loadSource.is_error()) {
     callback({0}, loadSource.error().to_string().c_str());
   } else {
-    auto call = fift::mem_run_fift(loadSource.move_as_ok(), args,
-                                   std::string(fift_path));
+    auto source = fift::create_mem_source_lookup(loadSource.move_as_ok(), files, std::string(fift_path));
+
+    if (source.is_error()) {
+      callback({0}, source.error().to_string().c_str());
+    } else {
+    auto call = fift::mem_run_fift(source.move_as_ok(), args);
 
     if (call.is_error()) {
       callback({0}, ("Error on execution contract - " + call.error().to_string()).c_str());
@@ -97,6 +102,7 @@ void run(const char* sourcePath, const char* fift_path, char* const argv[],
       res.push_back(fift_output.output.c_str());
 
       loadFiles(fift_output, res, returnFiles, returnFilesC, 0, callback);
+    }
     }
   }
 }

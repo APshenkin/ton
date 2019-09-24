@@ -26,7 +26,7 @@
 extern "C" {
 #endif
 
-FIFTLIB_EXPORT void run(const char* source, const char* fift_path, char* const argv[], int argc, char *const returnFiles[], int returnFilesC, void (*callback)(const char **, const char*));
+FIFTLIB_EXPORT void run(const char* source, const char* fift_path, char* const argv[], int argc, char* const add_files[], int add_files_c, char *const returnFiles[], int returnFilesC, void (*callback)(const char **, const char*));
 
 #ifdef __cplusplus
 }  // extern "C"
