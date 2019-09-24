@@ -51,12 +51,7 @@ void loadFiles(fift::FiftOutput & fift_output,
                int returnFilesC, int currentFile,
                void (*callback)(const char**, const char*)) {
   if (currentFile == returnFilesC) {
-    const char* arr[res.size()];
-    for (int i = 0; i < res.size(); i++) {
-      arr[i] = res[i];
-    }
-
-    callback(arr, {0});
+    callback(res.data(), {0});
   } else {
     auto loadFile = fift_output.source_lookup.read_file(
         std::string(returnFiles[currentFile]));
