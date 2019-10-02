@@ -22,7 +22,7 @@ tonNode.zeroStateIdExt workchain:int root_hash:int256 file_hash:int256 = tonNode
 adnl.message.query query_id:int256 query:bytes = adnl.Message;
 adnl.message.answer query_id:int256 answer:bytes = adnl.Message;
 
-liteServer.error code:int message:string = liteServer.Error; 
+liteServer.error code:int message:string = liteServer.Error;
 
 liteServer.accountId workchain:int id:int256 = liteServer.AccountId;
 
@@ -72,5 +72,5 @@ liteServer.getBlockProof mode:# known_block:tonNode.blockIdExt target_block:mode
 liteServer.getConfigAll mode:# id:tonNode.blockIdExt = liteServer.ConfigInfo;
 liteServer.getConfigParams mode:# id:tonNode.blockIdExt param_list:(vector int) = liteServer.ConfigInfo;
 
-liteServer.queryPrefix = Object; 
+liteServer.queryPrefix = Object;
 liteServer.query data:bytes = Object;

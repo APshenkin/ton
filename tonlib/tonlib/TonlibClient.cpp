@@ -251,6 +251,28 @@ class GetRawAccountState : public td::actor::Actor {
   }
 };
 
+class GetMasterChain : public td::actor::Actor {
+ public:
+  GetMasterChain(ExtClientRef ext_client_ref, td::Promise<LastBlockState>&& promise)
+      : promise_(std::move(promise)) {
+    client_.set_client(ext_client_ref);
+  }
+
+ private:
+  td::Promise<LastBlockState> promise_;
+  ExtClient client_;
+  LastBlockState last_block_;
+
+  void with_block_state(td::Result<LastBlockState> block_state) {
+    promise_.set_result(TRY_VM(std::move(block_state)));
+    stop();
+  }
+
+  void start_up() override {
+    client_.with_last_block([self = this](auto r_state) { self->with_block_state(std::move(r_state)); });
+  }
+};
+
 TonlibClient::TonlibClient(td::unique_ptr<TonlibCallback> callback) : callback_(std::move(callback)) {
 }
 TonlibClient::~TonlibClient() = default;
@@ -638,6 +660,11 @@ td::Result<tonlib_api::object_ptr<tonlib_api::raw_accountState>> to_raw_accountS
       raw_state.balance, std::move(code), std::move(data), to_transaction_id(raw_state.info), raw_state.info.gen_utime);
 }
 
+td::Result<tonlib_api::object_ptr<tonlib_api::raw_masterchainInfo>> to_raw_masterchainInfo(LastBlockState&& raw_state) {
+   return tonlib_api::make_object<tonlib_api::raw_masterchainInfo>(
+      raw_state.last_block_id.id.workchain, raw_state.last_block_id.id.shard, raw_state.last_block_id.id.seqno, raw_state.last_block_id.root_hash, raw_state.last_block_id.file_hash);
+}
+
 td::Result<std::string> to_std_address_or_throw(td::Ref<vm::CellSlice> cs) {
   auto tag = block::gen::MsgAddressInt().get_tag(*cs);
   if (tag < 0) {
@@ -899,6 +926,22 @@ td::Status TonlibClient::do_request(const tonlib_api::raw_sendBoc& request,
                          promise.set_value(tonlib_api::make_object<tonlib_api::ok>());
                        }
                      });
+  return td::Status::OK();
+}
+
+// Custom get masterchain info
+
+td::Status TonlibClient::do_request(const tonlib_api::raw_getMasterchainInfo& request,
+                                    td::Promise<object_ptr<tonlib_api::raw_masterchainInfo>>&& promise) {
+  td::actor::create_actor<GetMasterChain>(
+      "GetMasterChain", client_.get_client(),
+      [promise = std::move(promise)](td::Result<LastBlockState> r_state) mutable {
+        if (r_state.is_error()) {
+          return promise.set_error(r_state.move_as_error());
+        }
+        promise.set_result(to_raw_masterchainInfo(r_state.move_as_ok()));
+      })
+      .release();
   return td::Status::OK();
 }
 

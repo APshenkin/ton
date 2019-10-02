@@ -1,9 +1,11 @@
 double ? = Double;
 string ? = String;
 
+int ? = Int;
 int32 = Int32;
 int53 = Int53;
 int64 = Int64;
+long ? = Long;
 bytes = Bytes;
 secureString = SecureString;
 secureBytes = SecureBytes;
@@ -12,6 +14,8 @@ boolFalse = Bool;
 boolTrue = Bool;
 
 vector {t:Type} # [ t ] = Vector t;
+
+int256 8*[ int ] = Int256;
 
 error code:int32 message:string = Error;
 ok = Ok;
@@ -37,6 +41,7 @@ unpackedAccountAddress workchain_id:int32 bounceable:Bool testnet:Bool addr:byte
 
 internal.transactionId lt:int64 hash:bytes = internal.TransactionId;
 
+raw.masterchainInfo workchain:int shard:long seqno:int root_hash:int256 file_hash:int256 = raw.MasterchainInfo;
 raw.initialAccountState code:bytes data:bytes = raw.InitialAccountState;
 raw.accountState balance:int64 code:bytes data:bytes last_transaction_id:internal.transactionId sync_utime:int53 = raw.AccountState;
 raw.message source:string destination:string value:int64 message:bytes = raw.Message;
@@ -108,6 +113,7 @@ packAccountAddress account_address:unpackedAccountAddress = AccountAddress;
 getBip39Hints prefix:string = Bip39Hints;
 
 //raw.init initial_account_state:raw.initialAccountState = Ok;
+raw.getMasterchainInfo = raw.MasterchainInfo;
 raw.getAccountAddress initital_account_state:raw.initialAccountState = AccountAddress;
 raw.getAccountState account_address:accountAddress = raw.AccountState;
 raw.sendMessage destination:accountAddress initial_account_state:bytes data:bytes = Ok;
