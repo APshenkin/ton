@@ -111,6 +111,7 @@ getBip39Hints prefix:string = Bip39Hints;
 raw.getAccountAddress initital_account_state:raw.initialAccountState = AccountAddress;
 raw.getAccountState account_address:accountAddress = raw.AccountState;
 raw.sendMessage destination:accountAddress initial_account_state:bytes data:bytes = Ok;
+raw.sendBoc data:bytes = Ok;
 raw.getTransactions account_address:accountAddress from_transaction_id:internal.transactionId = raw.Transactions;
 
 testWallet.init private_key:inputKey = Ok;

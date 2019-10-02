@@ -884,6 +884,24 @@ td::Status TonlibClient::do_request(const tonlib_api::raw_sendMessage& request,
   return td::Status::OK();
 }
 
+// Custom request to send BOC message
+
+td::Status TonlibClient::do_request(const tonlib_api::raw_sendBoc& request,
+                                    td::Promise<object_ptr<tonlib_api::ok>>&& promise) {
+  TRY_RESULT(data, vm::std_boc_deserialize(request.data_));
+  client_.send_query(ton::lite_api::liteServer_sendMessage(vm::std_boc_serialize(data).move_as_ok()),
+                     [promise = std::move(promise)](auto r_info) mutable {
+                       if (r_info.is_error()) {
+                         promise.set_error(r_info.move_as_error());
+                       } else {
+                         auto info = r_info.move_as_ok();
+                         LOG(ERROR) << "info: " << to_string(info);
+                         promise.set_value(tonlib_api::make_object<tonlib_api::ok>());
+                       }
+                     });
+  return td::Status::OK();
+}
+
 td::Status TonlibClient::do_request(tonlib_api::raw_getAccountState& request,
                                     td::Promise<object_ptr<tonlib_api::raw_accountState>>&& promise) {
   if (!request.account_address_) {

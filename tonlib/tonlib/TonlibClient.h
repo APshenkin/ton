@@ -127,6 +127,7 @@ class TonlibClient : public td::actor::Actor {
   td::Status do_request(tonlib_api::options_setConfig& request, td::Promise<object_ptr<tonlib_api::ok>>&& promise);
 
   td::Status do_request(const tonlib_api::raw_sendMessage& request, td::Promise<object_ptr<tonlib_api::ok>>&& promise);
+  td::Status do_request(const tonlib_api::raw_sendBoc& request, td::Promise<object_ptr<tonlib_api::ok>>&& promise);
   td::Status do_request(tonlib_api::raw_getAccountState& request,
                         td::Promise<object_ptr<tonlib_api::raw_accountState>>&& promise);
   td::Status do_request(tonlib_api::raw_getTransactions& request,
