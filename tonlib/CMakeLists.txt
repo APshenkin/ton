@@ -84,7 +84,7 @@ if (NOT CMAKE_CROSSCOMPILING)
 	  #FIXME
 	  #add_dependencies(tonlib tonlib_generate_java_api)
   endif()
-endif() 
+endif()
 add_library(tonlibjson_private STATIC tonlib/ClientJson.cpp tonlib/ClientJson.h)
 target_include_directories(tonlibjson_private PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
@@ -104,6 +104,19 @@ target_include_directories(tonlibjson PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>)
 if (APPLE)
   set_target_properties(tonlibjson PROPERTIES LINK_FLAGS "-Wl,-exported_symbols_list,${CMAKE_CURRENT_SOURCE_DIR}/tonlibclientjson_export_list")
+endif()
+
+set(MNEMONIC_HEADERS tonlib/mnemoniclib.h)
+set(MNEMONIC_SOURCE tonlib/mnemoniclib.cpp)
+
+add_library(mnemoniclib SHARED ${MNEMONIC_SOURCE} ${MNEMONIC_HEADERS})
+target_link_libraries(mnemoniclib PRIVATE tonlib)
+generate_export_header(mnemoniclib EXPORT_FILE_NAME ${CMAKE_CURRENT_BINARY_DIR}/tonlib/mnemoniclib_export.h)
+target_include_directories(mnemoniclib PUBLIC
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>)
+if (APPLE)
+  set_target_properties(mnemoniclib PROPERTIES LINK_FLAGS "-Wl,-exported_symbols_list,${CMAKE_CURRENT_SOURCE_DIR}/mnemoniclib_export_list")
 endif()
 
 add_library(tonlibjson_static STATIC ${TONLIB_JSON_SOURCE} ${TONLIB_JSON_HEADERS})
