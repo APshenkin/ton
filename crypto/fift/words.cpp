@@ -766,19 +766,21 @@ void interpret_string_to_bytes(vm::Stack& stack) {
 
 std::string hex_to_string(const std::string& input)
 {
+    std::string in = std::move(input);
+    std::transform(in.begin(), in.end(), in.begin(), ::toupper);
     static const char* const lut = "0123456789ABCDEF";
-    size_t len = input.length();
+    size_t len = in.length();
     if (len & 1) throw std::invalid_argument("odd length");
 
     std::string output;
     output.reserve(len / 2);
     for (size_t i = 0; i < len; i += 2)
     {
-        char a = input[i];
+        char a = in[i];
         const char* p = std::lower_bound(lut, lut + 16, a);
         if (*p != a) throw std::invalid_argument("not a hex digit");
 
-        char b = input[i + 1];
+        char b = in[i + 1];
         const char* q = std::lower_bound(lut, lut + 16, b);
         if (*q != b) throw std::invalid_argument("not a hex digit");
 
