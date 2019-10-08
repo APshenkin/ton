@@ -41,11 +41,11 @@ unpackedAccountAddress workchain_id:int32 bounceable:Bool testnet:Bool addr:byte
 
 internal.transactionId lt:int64 hash:bytes = internal.TransactionId;
 
-raw.masterchainInfo workchain:int shard:long seqno:int root_hash:int256 file_hash:int256 = raw.MasterchainInfo;
+raw.blockInfo workchain:int shard:long seqno:int root_hash:int256 file_hash:int256 = raw.BlockInfo;
 raw.initialAccountState code:bytes data:bytes = raw.InitialAccountState;
 raw.accountState balance:int64 code:bytes data:bytes last_transaction_id:internal.transactionId frozen_hash:bytes sync_utime:int53 = raw.AccountState;
 raw.message source:string destination:string value:int64 fwd_fee:int64 ihr_fee:int64 created_lt:int64 body_hash:bytes message:bytes = raw.Message;
-raw.transaction utime:int53 data:bytes transaction_id:internal.transactionId fee:int64 storage_fee:int64 other_fee:int64 in_msg:raw.message out_msgs:vector<raw.message> = raw.Transaction;
+raw.transaction utime:int53 block:raw.blockInfo data:bytes transaction_id:internal.transactionId fee:int64 storage_fee:int64 other_fee:int64 in_msg:raw.message out_msgs:vector<raw.message> = raw.Transaction;
 raw.transactions transactions:vector<raw.transaction> previous_transaction_id:internal.transactionId = raw.Transactions;
 
 testWallet.initialAccountState public_key:string = testWallet.InitialAccountState;
@@ -114,7 +114,7 @@ packAccountAddress account_address:unpackedAccountAddress = AccountAddress;
 getBip39Hints prefix:string = Bip39Hints;
 
 //raw.init initial_account_state:raw.initialAccountState = Ok;
-raw.getMasterchainInfo = raw.MasterchainInfo;
+raw.getMasterchainInfo = raw.BlockInfo;
 raw.getAccountAddress initital_account_state:raw.initialAccountState = AccountAddress;
 raw.getAccountState account_address:accountAddress = raw.AccountState;
 raw.sendMessage destination:accountAddress initial_account_state:bytes data:bytes = Ok;

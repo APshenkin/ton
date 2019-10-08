@@ -708,9 +708,14 @@ td::Result<tonlib_api::object_ptr<tonlib_api::raw_accountState>> to_raw_accountS
                                                                raw_state.info.gen_utime);
 }
 
-td::Result<tonlib_api::object_ptr<tonlib_api::raw_masterchainInfo>> to_raw_masterchainInfo(LastBlockState&& raw_state) {
-   return tonlib_api::make_object<tonlib_api::raw_masterchainInfo>(
+td::Result<tonlib_api::object_ptr<tonlib_api::raw_blockInfo>> to_raw_masterchainInfo(LastBlockState&& raw_state) {
+   return tonlib_api::make_object<tonlib_api::raw_blockInfo>(
       raw_state.last_block_id.id.workchain, raw_state.last_block_id.id.shard, raw_state.last_block_id.id.seqno, raw_state.last_block_id.root_hash, raw_state.last_block_id.file_hash);
+}
+
+td::Result<tonlib_api::object_ptr<tonlib_api::raw_blockInfo>> to_raw_blockInfo(ton::BlockIdExt&& block) {
+   return tonlib_api::make_object<tonlib_api::raw_blockInfo>(
+      block.id.workchain, block.id.shard, block.id.seqno, block.root_hash, block.file_hash);
 }
 
 td::Result<std::string> to_std_address_or_throw(td::Ref<vm::CellSlice> cs) {
@@ -815,6 +820,7 @@ td::Result<tonlib_api::object_ptr<tonlib_api::raw_transaction>> to_raw_transacti
   std::string data;
 
   tonlib_api::object_ptr<tonlib_api::raw_message> in_msg;
+  tonlib_api::object_ptr<tonlib_api::raw_blockInfo> tx_block;
   std::vector<tonlib_api::object_ptr<tonlib_api::raw_message>> out_msgs;
   td::int64 fees = 0;
   td::int64 storage_fee = 0;
@@ -827,6 +833,8 @@ td::Result<tonlib_api::object_ptr<tonlib_api::raw_transaction>> to_raw_transacti
     }
 
     TRY_RESULT_ASSIGN(fees, to_balance(trans.total_fees));
+
+    TRY_RESULT_ASSIGN(tx_block, to_raw_blockInfo(std::move(info.blkid)))
 
     std::ostringstream outp;
     block::gen::t_Transaction.print_ref(outp, info.transaction);
@@ -858,7 +866,7 @@ td::Result<tonlib_api::object_ptr<tonlib_api::raw_transaction>> to_raw_transacti
     storage_fee = storage_fees->to_long();
   }
   return tonlib_api::make_object<tonlib_api::raw_transaction>(
-      info.now, data,
+      info.now, std::move(tx_block), data,
       tonlib_api::make_object<tonlib_api::internal_transactionId>(info.prev_trans_lt,
                                                                   info.prev_trans_hash.as_slice().str()),
       fees, storage_fee, fees - storage_fee, std::move(in_msg), std::move(out_msgs));
@@ -1006,7 +1014,7 @@ td::Status TonlibClient::do_request(const tonlib_api::raw_sendBoc& request,
 // Custom get masterchain info
 
 td::Status TonlibClient::do_request(const tonlib_api::raw_getMasterchainInfo& request,
-                                    td::Promise<object_ptr<tonlib_api::raw_masterchainInfo>>&& promise) {
+                                    td::Promise<object_ptr<tonlib_api::raw_blockInfo>>&& promise) {
   td::actor::create_actor<GetMasterChain>(
       "GetMasterChain", client_.get_client(),
       [promise = std::move(promise)](td::Result<LastBlockState> r_state) mutable {
