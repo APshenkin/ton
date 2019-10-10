@@ -782,7 +782,7 @@ td::Result<tonlib_api::object_ptr<tonlib_api::raw_message>> to_raw_message_or_th
       }
 
       return tonlib_api::make_object<tonlib_api::raw_message>(std::move(src), std::move(dest), balance, fwd_fee,
-                                                              ihr_fee, created_lt, std::move(body_hash),
+                                                              ihr_fee, created_lt, std::move(body_hash), cell->get_hash().as_slice().str(),
                                                               std::move(body_message));
     }
     case block::gen::CommonMsgInfo::ext_in_msg_info: {
@@ -799,7 +799,7 @@ td::Result<tonlib_api::object_ptr<tonlib_api::raw_message>> to_raw_message_or_th
         body = vm::load_cell_slice_ref(message.body->prefetch_ref());
       }
       auto body_hash = vm::CellBuilder().append_cellslice(*body).finalize()->get_hash().as_slice().str();
-      return tonlib_api::make_object<tonlib_api::raw_message>("", std::move(dest), 0, 0, 0, 0, std::move(body_hash),
+      return tonlib_api::make_object<tonlib_api::raw_message>("", std::move(dest), 0, 0, 0, 0, std::move(body_hash), cell->get_hash().as_slice().str(),
                                                               "");
     }
     case block::gen::CommonMsgInfo::ext_out_msg_info: {
@@ -808,7 +808,7 @@ td::Result<tonlib_api::object_ptr<tonlib_api::raw_message>> to_raw_message_or_th
         return td::Status::Error("Failed to unpack CommonMsgInfo::ext_out_msg_info");
       }
       TRY_RESULT(src, to_std_address(msg_info.src));
-      return tonlib_api::make_object<tonlib_api::raw_message>(std::move(src), "", 0, 0, 0, 0, "", "");
+      return tonlib_api::make_object<tonlib_api::raw_message>(std::move(src), "", 0, 0, 0, 0, "", "", "");
     }
   }
 
